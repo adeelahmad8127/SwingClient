@@ -1,0 +1,7 @@
+02:52:51.394 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+02:52:51.580 [main] INFO com.firebase.server.forge.App$ - Listening at localhost:9000
+02:56:21.792 [Thread-1] INFO com.firebase.server.forge.App$ - Attempting graceful shutdown.
+02:56:21.802 [NamespaceSystem-akka.actor.default-dispatcher-14] INFO com.firebase.core.namespace.Terminator$Terminator - 1 actors left to terminate: forex-9f7ac
+02:56:21.810 [NamespaceSystem-akka.actor.default-dispatcher-16] INFO com.firebase.core.namespace.NamespaceActor - Stopping namespace actor for forex-9f7ac
+02:56:21.811 [NamespaceSystem-akka.actor.default-dispatcher-16] INFO com.firebase.core.namespace.NamespaceActor - Gauges removed for forex-9f7ac
+02:56:21.816 [Thread-1] INFO com.firebase.server.forge.App$ - Graceful shutdown complete.
