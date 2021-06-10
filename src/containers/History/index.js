@@ -19,7 +19,6 @@ class History extends Component {
   };
 
   componentDidMount() {
-    this.getData()
     console.log('auth().currentUser', auth().currentUser);
     const date = moment().format('D-M-yyyy');
     console.log('date', date);
@@ -40,9 +39,6 @@ class History extends Component {
       });
   }
 
-  getData = ()=>{
-    this.props.users
-  }
 
   renderItem = ({item, index}) => {
     return <Item data={item} />;
@@ -79,7 +75,6 @@ class History extends Component {
 }
 
 const mapDispatchToProps = dispatch => ({
-  users : dispatch(actions.fetchData())
 })
 
 const mapStateToProps = (store) => ({

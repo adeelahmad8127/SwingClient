@@ -9,6 +9,8 @@ import {
   Linking,
   Platform,
 } from 'react-native';
+
+import * as Actions from '../../user/actionIndex'
 import auth from '@react-native-firebase/auth';
 import {connect} from 'react-redux';
 import firebase from 'firebase';
@@ -22,6 +24,8 @@ import {Loader} from '../../common';
 import {subscribeToTopic} from '../../utils/FirebaseUtil';
 import Images from '../../theme/Images';
 import {ScrollView} from 'react-native-gesture-handler';
+import { LoginManager } from 'react-native-fbsdk';
+import { login } from '../../ducks/auth/actions';
 
 class Login extends Component {
   state = {
@@ -61,27 +65,31 @@ class Login extends Component {
     const {email, password} = this.state;
     if (email !== '' && password !== '') {
       const trimedEmail = email.trim().toLowerCase();
-      const trimedPassword = password.trim().toLowerCase();
+      const trimedPassword = password.trim();
+      let params = { 
+        username : email,
+        password : password
+      }
       this.setState({loading: true}, () => {
-        auth()
-          .signInWithEmailAndPassword(trimedEmail, trimedPassword)
+        this.props.login(params)
           .then((user) => {
-            console.log('user', user);
-            const {uid} = user.user._user;
-            const {isSubscribed} = this.props;
-            // this.checkIsUserSubscribe(uid); //open it
-            console.log('isSubscribed', isSubscribed);
-            if (isSubscribed) {
-              // this.props.login({uid});
+            this.setState({loading : false})
+            // console.log('user', user);
+            // const {uid} = user.user._user;
+            // const {isSubscribed} = this.props;
+            // // this.checkIsUserSubscribe(uid); //open it
+            // console.log('isSubscribed', isSubscribed);
+            // if (isSubscribed) {
+            //   // this.props.login({uid});
 
-              subscribeToTopic();
-              NavigationService.reset('DrawerScreen');
-            } else {
-              NavigationService.reset('Subscription');
-            }
+            //   subscribeToTopic();
+            //   NavigationService.reset('DrawerScreen');
+            // } else {
+            //   NavigationService.reset('Subscription');
+            // }
           })
           .catch((error) => {
-            console.log('error', error.code);
+            console.log('error', error);
             if (error.code === 'auth/user-not-found') {
               this.setState({
                 loading: false,
@@ -245,9 +253,12 @@ class Login extends Component {
     );
   }
 }
-const actions = {
-  login: authActions.login,
-};
+const actions = (dispatch) => {
+  // login: authActions.login,
+ return {
+    login: (params) => dispatch(Actions.login(params)),
+  }
+}
 
 const mapStateToProps = (store) => ({
   isSubscribed: store.auth.subscriptionActive,

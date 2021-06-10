@@ -1,6 +1,8 @@
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 import storage from '@react-native-community/async-storage'; //  AsyncStorage for react-native
 import createSagaMiddleware from 'redux-saga';
+import thunk from 'redux-thunk';
+import promise from 'redux-promise-middleware';
 import {persistStore, persistReducer} from 'redux-persist';
 import {createStore, applyMiddleware} from 'redux';
 import {createLogger} from 'redux-logger';
@@ -34,7 +36,7 @@ export default function configureStore(onComplete: Function) {
   }
 
   // init middleware with list
-  const middleware = applyMiddleware(...middlewareList);
+const middleware = applyMiddleware(promise, thunk);
 
   // init persist config - set which reducers to save
   const persistConfig = {
@@ -60,5 +62,4 @@ export default function configureStore(onComplete: Function) {
   persistStore(store, null, () => onComplete(store));
 
   // then run the saga
-  sagaMiddleware.run(RootSaga);
 }

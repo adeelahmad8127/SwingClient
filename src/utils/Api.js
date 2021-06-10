@@ -1,7 +1,7 @@
 //Helpers
 //Config
 import { BASE_URL } from './Config'
-
+import Toast from 'react-native-tiny-toast'
 
 class Api {
     static headers() {
@@ -42,32 +42,23 @@ class Api {
 
         }
 
+        console.log("options",options)
+
         // console.log('url is ', url)
         // console.log('options is ', options)
 
         return fetch(url, options).then(async resp => {
             // console.log('resp is ', resp)
 
+
             let json = await resp.json();
             // console.log('json is ', json)
-
             if (resp.ok) {
-                if(route=='customer/sendOTP'){
-                    if (json.success || json.sucess) {
-                        return json
-                    } else {
-                        Toast.show(json.message?json.message:json.msg)
-                        return false
-                    }
-                }else{
-                    if (json.success || json.sucess) {
-                        return json
-                    } else {
-                        Toast.show(json.message?json.message:json.msg)
-                        return
-                    }
-                }
-
+                return json
+            }
+            else {
+                Toast.show(json.message?json.message:json.msg)
+                return
             }
         }).catch(json => {
             // console.log('error is ', json)
