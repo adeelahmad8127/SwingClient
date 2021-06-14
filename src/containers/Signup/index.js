@@ -13,6 +13,8 @@ import {
 import auth from '@react-native-firebase/auth';
 import {connect} from 'react-redux';
 import firebase from 'firebase';
+import * as Actions from '../../user/actionIndex';
+import {storeData} from '../../utils/LocalDB'
 
 import styles from './styles';
 import {authActions} from '../../ducks/auth';
@@ -36,73 +38,34 @@ class Signup extends Component {
   };
 
   createNewUser = async () => {
-    const {email, password} = this.state;
+    const {email, password,name} = this.state;
     const trimedEmail = email.trim().toLowerCase();
-    const trimedPassword = password.trim().toLowerCase();
+    const trimmedName = name.trim()
+    const trimedPassword = password.trim()
     let fcmToken = await AsyncStorage.getItem('fcmToken');
-    auth()
-      .createUserWithEmailAndPassword(trimedEmail, trimedPassword)
-      .then((user) => {
-        const {uid} = user.user._user;
-        console.log('user', user);
-        firebase
-          .database()
-          .ref(`/users/${uid}`)
-          .set({
-            email: email,
-            notification_token: fcmToken,
-            created_at: Date.now(),
-            is_subscribe: false,
-          })
-          .then(() => {
-            console.log('abc abc');
-            this.setState({loading: false}, () => {
-              NavigationService.reset('Subscription'); //open it
-              // subscribeToTopic();
-              // NavigationService.reset('DrawerScreen');
-              this.props.signup({uid});
+    let params = {
+      username : trimmedName,
+      email : trimedEmail,
+      password1 : trimedPassword,
+      password2 : password,
+    }
+    this.props.signup(params).then(response =>{
+      if (response!==undefined) {
+        this.handleSignUpResult(response)
+        NavigationService.reset('DrawerScreen');
+      }
+    })
+    
+  };
 
-              // if (Platform.OS === 'ios') {
-              //   NavigationService.reset('Subscription');
-              // } else {
-              // subscribeToTopic();
-              // NavigationService.reset('DrawerScreen');
-              // }
-              // this.props.signup({uid});
-            });
-          })
-          .catch((error) => {
-            console.log('error', error);
-            this.setState({
-              loading: false,
-              errorMessage: 'Something went wrong. Please try Again',
-            });
-          });
-      })
-      .catch((error) => {
-        if (error.code === 'auth/email-already-in-use') {
-          this.setState({
-            loading: false,
-            errorMessage: 'That email address is already in use!',
-          });
-          console.log('That email address is already in use!');
-        }
-
-        if (error.code === 'auth/invalid-email') {
-          this.setState({
-            loading: false,
-            errorMessage: 'That email address is invalid!',
-          });
-          console.log('That email address is invalid!');
-        }
-
-        console.error(error);
-      });
+  
+  handleSignUpResult = async (user) => {
+    await storeData('user_data', JSON.stringify(user));
   };
 
   onCreateAcc = () => {
-    const {email, password} = this.state;
-    if (email !== '' && password !== '') {
+    const {email, password,name} = this.state;
+    if (email !== '' && password !== ''&& name !== '' && password.length >= 8) {
       console.log('email', email, '|');
       console.log('password', password);
       this.setState({loading: true}, () => {
@@ -110,7 +73,7 @@ class Signup extends Component {
       });
     } else {
       this.setState({
-        errorMessage: 'Please Enter Email & Password',
+        errorMessage: 'Please Enter Valid Email & Password',
       });
     }
   };
@@ -143,6 +106,7 @@ class Signup extends Component {
         placeholder={'Enter Name'}
         style={styles.inputField}
         onChangeText={this.onChangeName}
+        autoCapitalize= "none"
         value={name}
       />
     );
@@ -156,6 +120,7 @@ class Signup extends Component {
         textContentType="emailAddress"
         autoCorrect={false}
         placeholderTextColor="#ccc"
+        autoCapitalize= "none"
         placeholder={'Email'}
         style={styles.inputField}
         onChangeText={this.onChangeEmail}
@@ -173,6 +138,7 @@ class Signup extends Component {
         placeholderTextColor="#ccc"
         placeholder={'Password'}
         style={styles.inputField}
+        autoCapitalize= "none"
         onChangeText={this.onChangePassword}
         value={password}
         secureTextEntry
@@ -263,8 +229,11 @@ class Signup extends Component {
   }
 }
 
-const actions = {
-  signup: authActions.signup,
+const actions = (dispatch) => {
+  // login: authActions.login,
+  return {
+    signup: (params) => dispatch(Actions.signup(params)),
+  };
 };
 
 const mapStateToProps = (store) => ({});

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import AsyncStorage from '@react-native-community/async-storage';
 
 

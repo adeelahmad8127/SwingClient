@@ -52,7 +52,7 @@ class Api {
 
 
             let json = await resp.json();
-            // console.log('json is ', json)
+            console.log('json is ', json)
             if (resp.ok) {
                 return json
             }

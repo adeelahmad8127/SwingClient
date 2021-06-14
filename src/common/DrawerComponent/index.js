@@ -24,6 +24,7 @@ import {NavigationService} from '../../utils';
 import Images from '../../theme/Images';
 import styles from './styles';
 import {unubscribeToTopic} from '../../utils/FirebaseUtil';
+import { storeData  } from '../../utils/LocalDB';
 
 const {width, height} = Dimensions.get('window');
 
@@ -31,13 +32,19 @@ class DrawerComponent extends Component {
   onLogout = () => {
     unubscribeToTopic();
     this.props.logout();
+    this.logoutUser()
     NavigationService.reset('Login');
-    auth()
-      .signOut()
-      .then(() => {
-        console.log('User Successfully Sign out');
-      });
+    
+    // auth()
+    //   .signOut()
+    //   .then(() => {
+    //     console.log('User Successfully Sign out');
+    //   });
   };
+
+  logoutUser= async()=>{
+    await storeData("user_data","")
+  }
 
   onExit = () => {
     NavigationService.toggleDrawer();

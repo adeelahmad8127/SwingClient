@@ -9,8 +9,8 @@ import {
   Linking,
   Platform,
 } from 'react-native';
-
-import * as Actions from '../../user/actionIndex'
+import {storeData, getData} from '../../utils/LocalDB';
+import * as Actions from '../../user/actionIndex';
 import auth from '@react-native-firebase/auth';
 import {connect} from 'react-redux';
 import firebase from 'firebase';
@@ -24,8 +24,8 @@ import {Loader} from '../../common';
 import {subscribeToTopic} from '../../utils/FirebaseUtil';
 import Images from '../../theme/Images';
 import {ScrollView} from 'react-native-gesture-handler';
-import { LoginManager } from 'react-native-fbsdk';
-import { login } from '../../ducks/auth/actions';
+import {LoginManager} from 'react-native-fbsdk';
+import {login} from '../../ducks/auth/actions';
 
 class Login extends Component {
   state = {
@@ -66,14 +66,19 @@ class Login extends Component {
     if (email !== '' && password !== '') {
       const trimedEmail = email.trim().toLowerCase();
       const trimedPassword = password.trim();
-      let params = { 
-        username : email,
-        password : password
-      }
+      let params = {
+        username: email,
+        password: password,
+      };
       this.setState({loading: true}, () => {
-        this.props.login(params)
+        this.props
+          .login(params)
           .then((user) => {
-            this.setState({loading : false})
+            this.setState({loading: false});
+            if (user !==undefined){
+              this.handleSignInResult(user);
+              NavigationService.reset('DrawerScreen');
+            }
             // console.log('user', user);
             // const {uid} = user.user._user;
             // const {isSubscribed} = this.props;
@@ -81,7 +86,6 @@ class Login extends Component {
             // console.log('isSubscribed', isSubscribed);
             // if (isSubscribed) {
             //   // this.props.login({uid});
-
             //   subscribeToTopic();
             //   NavigationService.reset('DrawerScreen');
             // } else {
@@ -123,6 +127,10 @@ class Login extends Component {
     }
   };
 
+  handleSignInResult = async (user) => {
+    await storeData('user_data', JSON.stringify(user));
+  };
+
   onFocus = () => {
     this.setState({errorMessage: ''});
   };
@@ -148,8 +156,9 @@ class Login extends Component {
         autoCorrect={false}
         autoCapitalize="none"
         placeholderTextColor="#ccc"
-        placeholder={'Email'}
+        placeholder={'Username'}
         style={styles.inputField}
+        autoCapitalize= "none"
         onChangeText={this.onChangeEmail}
         value={email}
         onFocus={this.onFocus}
@@ -161,13 +170,14 @@ class Login extends Component {
     const {password} = this.props;
     return (
       <TextInput
-        textContentType="password"
+        keyboardType="default"
         placeholderTextColor="#ccc"
         placeholder={'Password'}
         style={styles.inputField}
         onChangeText={this.onChangePassword}
         value={password}
         secureTextEntry
+        autoCapitalize= "none"
         onFocus={this.onFocus}
       />
     );
@@ -255,10 +265,10 @@ class Login extends Component {
 }
 const actions = (dispatch) => {
   // login: authActions.login,
- return {
+  return {
     login: (params) => dispatch(Actions.login(params)),
-  }
-}
+  };
+};
 
 const mapStateToProps = (store) => ({
   isSubscribed: store.auth.subscriptionActive,

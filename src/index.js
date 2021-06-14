@@ -19,6 +19,8 @@ import {
 import SplashScreen from 'react-native-splash-screen';
 import auth from '@react-native-firebase/auth';
 
+import {getData} from './utils/LocalDB';
+
 import {Provider, connect} from 'react-redux';
 import firebase from 'firebase';
 import React from 'react';
@@ -45,8 +47,12 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     configureStore((store) => {
-      this.initSettings(store);
+      this.checkUserLogin();
       this.setState({store});
+      // DataHandler.setUserLogin(isUserLoggedIn);
+      DataHandler.setStore(store);
+      // this.initSettings(store);
+      // this.setState({store});
     });
   }
 
@@ -75,6 +81,7 @@ export default class App extends React.Component {
   state = {
     isLoading: true,
     store: null,
+    isUserLoggedIn: false,
     isActiveSubscription: null,
   };
 
@@ -111,6 +118,21 @@ export default class App extends React.Component {
     });
   }
 
+  checkUserLogin = async () => {
+    let user = await getData('user_data');
+
+    user = JSON.parse(user);
+    SplashScreen.hide();
+    let isUserLogin;
+    try{
+      isUserLogin = user.access_token != null;
+    }catch(errror){
+      isUserLogin = false
+    }
+    
+    this.setState({isUserLoggedIn: isUserLogin, isLoading : false});
+  };
+
   render() {
     if (this.state.isLoading) {
       return (
@@ -120,40 +142,46 @@ export default class App extends React.Component {
         </View>
       );
       // return null;
-    }
-
-    const {isActiveSubscription} = this.state;
-    // const isUserLogin = DataHandler.getUserLogin();
-    const isUserLogin = auth().currentUser;
-
-    console.log('===== isUserLogin =====', isUserLogin);
-    console.log('===== isActiveSubscription =====', isActiveSubscription);
-
-    let initialRouteName = 'Login';
-    if (isUserLogin && this.state.isActiveSubscription) {
-      subscribeToTopic();
-      initialRouteName = 'DrawerScreen';
-    } else if (isUserLogin && !this.state.isActiveSubscription) {
-      unubscribeToTopic();
-      initialRouteName = 'Subscription';
     } else {
-      initialRouteName = 'Login';
-    }
-    const ios_id = '759533837975395_759535874641858';
-    const android_id = '759533837975395_759534394642006';
-    const banner_id = Platform.OS === 'ios' ? ios_id : android_id;
+      const {isActiveSubscription} = this.state;
+      // const isUserLogin = DataHandler.getUserLogin();
+      // const isUserLogin = auth().currentUser;
 
-    // const initialRouteName =
-    //   auth().currentUser && isActiveSubscription ? 'DrawerScreen' : 'Login';
+      // console.log('===== isUserLogin =====', isUserLogin);
+      // console.log('===== isActiveSubscription =====', isActiveSubscription);
 
-    return (
-      // eslint-disable-next-line react-native/no-inline-styles
-      <View style={{flex: 1, backgroundColor: '#000'}}>
-        <StatusBar barStyle="dark-content" />
-        <Provider store={this.state.store}>
-          <AppNavigator initialRouteName={initialRouteName} />
-        </Provider>
-        {/* <View style={{backgroundColor: '#fff'}}>
+      // let initialRouteName = 'Login';
+      // if (isUserLogin && this.state.isActiveSubscription) {
+      //   subscribeToTopic();
+      //   initialRouteName = 'DrawerScreen';
+      // } else if (isUserLogin && !this.state.isActiveSubscription) {
+      //   unubscribeToTopic();
+      //   initialRouteName = 'Subscription';
+      // } else {
+      //   initialRouteName = 'Login';
+      // }
+      // let initialRouteName = 'Login'
+      const ios_id = '759533837975395_759535874641858';
+      const android_id = '759533837975395_759534394642006';
+      const banner_id = Platform.OS === 'ios' ? ios_id : android_id;
+
+      // const initialRouteName =
+      //   auth().currentUser && isActiveSubscription ? 'DrawerScreen' : 'Login';
+
+      return (
+        // eslint-disable-next-line react-native/no-inline-styles
+        <View style={{flex: 1, backgroundColor: '#000'}}>
+          <StatusBar barStyle="dark-content" />
+          {/* {this.checkUserLogin()} */}
+          <Provider store={this.state.store}>
+            {console.log('Status', this.state.isUserLoggedIn)}
+            {this.state.isUserLoggedIn ? (
+              <AppNavigator initialRouteName={'DrawerScreen'} />
+            ) : (
+              <AppNavigator initialRouteName={'Login'} />
+            )}
+          </Provider>
+          {/* <View style={{backgroundColor: '#fff'}}>
           <BannerView
             placementId={banner_id}
             // placementId="320603868459075_592268954625897" // test id for ads
@@ -163,8 +191,9 @@ export default class App extends React.Component {
             onError={(err) => console.log('BannerView', err)}
           />
         </View> */}
-      </View>
-    );
+        </View>
+      );
+    }
   }
 }
 
