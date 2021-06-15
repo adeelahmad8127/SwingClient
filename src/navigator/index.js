@@ -34,6 +34,7 @@ function DrawerScreen() {
       drawerStyle={{width: 200}}
       drawerContent={(props) => <DrawerComponent {...props} />}
       initialRouteName="FormSignal">
+      <Stack.Screen name="Home" component={Home} options={options} />
       <Stack.Screen name="History" component={History} options={options} />
       {/* <Stack.Screen
         name="Form Signal"

@@ -33,6 +33,19 @@ export const login = (params) => {
   };
 
   
+
+  export const getStats = (params) => {
+    return async (dispatch) => {
+      let response = await Api.get(
+          `signal/statistics/`,
+      params);
+      if (response ===undefined){
+        alert("Something went wrong")
+      }
+      return response;
+    };
+  };
+  
 // export const placeOrder = (params) => {
 //     return async (dispatch) => {
 //       let response = await Api.post('customer/placeOrder', params);
