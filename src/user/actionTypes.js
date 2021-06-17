@@ -32,8 +32,8 @@ export const login = (params) => {
     };
   };
 
-  
 
+  
   export const getStats = (params) => {
     return async (dispatch) => {
       let response = await Api.get(
@@ -45,7 +45,34 @@ export const login = (params) => {
       return response;
     };
   };
+
   
+  export const getHistory = (params) => {
+    return async (dispatch) => {
+      let response = await Api.get(
+          `signal/list/`,
+      params);
+      if (response ===undefined){
+        alert("Something went wrong")
+      }
+      return response;
+    };
+  };
+
+
+  
+  export const getSignal = (params) => {
+    return async (dispatch) => {
+      let response = await Api.get(
+          `signal/2021-05-14/`);
+      if (response ===undefined){
+        alert("Something went wrong")
+      }
+      return response;
+    };
+  };
+
+
 // export const placeOrder = (params) => {
 //     return async (dispatch) => {
 //       let response = await Api.post('customer/placeOrder', params);

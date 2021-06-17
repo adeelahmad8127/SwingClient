@@ -29,8 +29,8 @@ import {login} from '../../ducks/auth/actions';
 
 class Login extends Component {
   state = {
-    email: '',
-    password: '',
+    email: 'hassan123',
+    password: 'eee113311',
     errorMessage: '',
     loading: false,
   };

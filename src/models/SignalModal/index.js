@@ -69,28 +69,28 @@ export default class SignalModal extends Component {
   };
 
   renderCurrency() {
-    const {currency, signal} = this.state.data;
+    const {currency_pairs, order_type} = this.state.data;
     // let type;
     let color;
-    console.log('signal', signal);
+    console.log('signal', order_type);
     if (
-      signal === 'Buy at Market' ||
-      signal === 'Buy Limit' ||
-      signal === 'Buy Stop'
+      order_type === 'Buy at Market' ||
+      order_type === 'Buy Limit' ||
+      order_type === 'Buy Stop'
     ) {
       // type = 'BUY';
       color = Colors.green;
     } else if (
-      signal === 'Sell Limit' ||
-      signal === 'Sell Stop' ||
-      signal === 'Sell at Market'
+      order_type === 'Sell Limit' ||
+      order_type === 'Sell Stop' ||
+      order_type === 'Sell at Market'
     ) {
       color = 'red';
       // type = 'SELL';
     }
     return (
       <View style={[styles.currencyContainer, {backgroundColor: color}]}>
-        <Text style={styles.title}>{currency}</Text>
+        <Text style={styles.title}>{currency_pairs}</Text>
       </View>
     );
   }
@@ -124,8 +124,8 @@ export default class SignalModal extends Component {
   }
 
   renderTime() {
-    const {last_update} = this.state.data;
-    return <Time time={last_update} />;
+    const {updated_at} = this.state.data;
+    return <Time time={updated_at} />;
   }
 
   renderUpdateButton() {
@@ -139,25 +139,25 @@ export default class SignalModal extends Component {
   }
   _renderContent() {
     const {
-      signal,
+      order_type,
       status,
       open_price,
-      stop_loss,
-      target,
-      profit_loss,
+      stope_loss,
+      Target,
+      p_l,
     } = this.state.data;
     const sign = status === 'Target' ? '+' : '';
 
     return (
       <View style={styles.contentContainer}>
         {this.renderCurrency()}
-        {this.renderSignal('Signal', signal)}
+        {this.renderSignal('Signal', order_type)}
         {this.renderSignal('Status', status)}
         {this.renderDivider()}
         {this.renderStatus('Open Price', open_price)}
-        {this.renderStatus('Stop Loss', stop_loss)}
-        {this.renderStatus('Target', target)}
-        {this.renderStatus('P/L', `${sign}${profit_loss}`)}
+        {this.renderStatus('Stop Loss', stope_loss)}
+        {this.renderStatus('Target', Target)}
+        {this.renderStatus('P/L', `${sign}${p_l}`)}
         {this.renderDivider()}
         {this.renderTime()}
         {/* {this.renderUpdateButton()} */}

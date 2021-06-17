@@ -6,7 +6,7 @@ import {NavigationService} from '../../../utils';
 export default class Item extends Component {
   onDatePress = () => {
     NavigationService.navigate('HistoryCurrency', {
-      date: this.props.data,
+      date: this.props.data.created_date,
     });
   };
 
@@ -14,7 +14,7 @@ export default class Item extends Component {
     const {data} = this.props;
     return (
       <TouchableOpacity onPress={this.onDatePress} style={styles.dateContainer}>
-        <Text style={styles.dateText}>{data}</Text>
+        <Text style={styles.dateText}>{data.created_date}</Text>
       </TouchableOpacity>
     );
   }

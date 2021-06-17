@@ -20,6 +20,7 @@ import {
 
 import {NavigationService} from '../utils';
 import {DrawerComponent} from '../common';
+import TradingType from '../containers/Home/TradingType';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -35,6 +36,7 @@ function DrawerScreen() {
       drawerContent={(props) => <DrawerComponent {...props} />}
       initialRouteName="FormSignal">
       <Stack.Screen name="Home" component={Home} options={options} />
+      <Stack.Screen name="TradingType" component={TradingType} options={options} />
       <Stack.Screen name="History" component={History} options={options} />
       {/* <Stack.Screen
         name="Form Signal"

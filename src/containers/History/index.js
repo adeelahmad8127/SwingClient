@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {FlatList, ActivityIndicator} from 'react-native';
+import React, {Component,useState,useEffect} from 'react';
+import {FlatList, ActivityIndicator,View,Text} from 'react-native';
 import firebase from 'firebase';
 import moment from 'moment';
 import _ from 'lodash';
@@ -9,73 +9,73 @@ import {Navbar, Loader} from '../../common';
 import auth from '@react-native-firebase/auth';
 import {authActions} from '../../ducks/auth';
 import {connect} from 'react-redux';
+import * as Action from '../../user/actionIndex'
 
 import * as actions from '../../user/actionTypes'
-
-class History extends Component {
-  state = {
-    data: [],
-    loading: true,
-  };
-
-  componentDidMount() {
-    console.log('auth().currentUser', auth().currentUser);
-    const date = moment().format('D-M-yyyy');
-    console.log('date', date);
-    firebase
-      .database()
-      .ref('signals')
-      .on('value', (snapshot) => {
-        console.log('snapshot.val()', snapshot.val());
-        if (snapshot.val() !== null) {
-          const history = Object.keys(snapshot.val());
-          console.log('history', history);
-          let getTimestamp = (str) => +new Date(...str.split('-').reverse());
-          history.sort((a, b) => getTimestamp(a) - getTimestamp(b));
-          const dates = history.filter((e) => e !== date);
-          this.setState({data: dates.reverse()});
-        }
-        this.setState({loading: false});
-      });
-  }
+import { WP } from '../../utils/Responsive';
 
 
-  renderItem = ({item, index}) => {
+const History =(props)=> {
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState([])
+  const [nodata, setNoData] = useState(false)
+
+
+  useEffect(() => {
+    props.getHistory().then(response =>{
+      setLoading(false)
+      if (response !==undefined) {
+        setData(response)
+      }else{
+        setNoData(true)
+      }
+    })
+  }, [])
+
+
+  const renderItem = ({item, index}) => {
     return <Item data={item} />;
   };
 
-  renderList() {
+  const renderList=()=> {
     return (
       <FlatList
         style={styles.container}
-        data={this.state.data}
-        renderItem={this.renderItem}
+        data={data}
+        renderItem={renderItem}
       />
     );
   }
 
-  renderLoader() {
-    const {loading} = this.state;
+  const renderLoader =()=> {
     return <Loader loading={loading} color={'#fff'} />;
   }
 
-  renderNavbar() {
-    return <Navbar title={'History'} />;
-  }
+  const renderNavbar =()=> {
+    return <Navbar hasDrawer={false} title={'History'} />;
+  } 
 
-  render() {
     return (
-      <>
-        {this.renderNavbar()}
-        {this.renderList()}
-        {this.renderLoader()}
-      </>
+      <View style={{marginTop : WP(5)}}>
+        {renderNavbar()}
+        {!nodata ? renderList() : 
+          <View style ={{backgroundColor : '#000',width : '100%',height: '100%',alignItems : 'center', justifyContent : 'center'}}>
+            <Text style = {{color :'#fff'}}>No data available</Text>
+          </View>
+        }
+        {renderLoader()}
+      </View>
     );
-  }
 }
 
-const mapDispatchToProps = dispatch => ({
-})
+
+
+const mapDispatchToProps = (dispatch) => {
+  // login: authActions.login,
+  return {
+    getHistory: (params) => dispatch(Action.getHistory(params)),
+  };
+};
 
 const mapStateToProps = (store) => ({
   isSubscribed: store.auth.subscriptionActive,

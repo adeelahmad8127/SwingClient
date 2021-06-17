@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component,useState,useEffect} from 'react';
 import {Text, View, FlatList} from 'react-native';
 import firebase from 'firebase';
 import _ from 'lodash';
@@ -7,70 +7,93 @@ import Item from './Item';
 import {historyData} from '../../data';
 import styles from './styles';
 import {Navbar, Loader} from '../../common';
+import {connect} from 'react-redux';
 import SignalModal from '../../models/SignalModal';
+import * as Action from '../../user/actionIndex'
+import { getSignal } from '../../user/actionTypes';
 
-export default class HistoryCurrency extends Component {
-  state = {
-    data: [],
-    loading: true,
-  };
+const HistoryCurrency=(props)=> {
+  
 
-  componentDidMount() {
-    const {date} = this.props.route.params;
-    firebase
-      .database()
-      .ref(`signals/${date}`)
-      .on('value', (snapshot) => {
-        this.setState({data: _.toArray(snapshot.val()), loading: false});
-      });
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)
+
+
+  useEffect(() => {
+    callAPI()
+    
+  }, [])
+
+  const callAPI =() =>{
+    props.getSignal(props.route.params.date).then(res =>{
+      // this.setState({loading:false, data : res})
+      setLoading(false)
+      if (res !== undefined) {
+        
+      }
+      setData(res)
+      
+    })
   }
+  
 
-  onPressItem = (data) => {
-    this.signalModal.show(data);
+  const onPressItem = (data) => {
+    signalModal.show(data);
   };
 
-  renderItem = ({item, index}) => {
-    return <Item data={item} index={index} onPress={this.onPressItem} />;
+  const renderItem = ({item, index}) => {
+    return <Item data={item} index={index} onPress={onPressItem} />;
   };
 
-  renderList() {
+  const renderList =()=>{
     return (
       <FlatList
         style={styles.container}
         contentContainerStyle={{marginTop: 20}}
-        data={this.state.data}
-        renderItem={this.renderItem}
+        data={data}
+        renderItem={renderItem}
       />
     );
   }
 
-  renderSignalModal() {
+  const renderSignalModal=()=> {
     return (
       <SignalModal
         ref={(ref) => {
-          this.signalModal = ref;
+          signalModal = ref;
         }}
       />
     );
   }
 
-  renderLoader() {
-    const {loading} = this.state;
+  renderLoader =()=> {
     return <Loader loading={loading} color={'#fff'} />;
   }
 
-  renderNavbar() {
+  renderNavbar=()=> {
     return <Navbar title={'History Currency'} hasDrawer={false} />;
   }
 
-  render() {
     return (
       <>
-        {this.renderNavbar()}
-        {this.renderList()}
-        {this.renderSignalModal()}
-        {this.renderLoader()}
+        {renderNavbar()}
+        {renderList()}
+        {renderSignalModal()}
+        {renderLoader()}
       </>
     );
-  }
+
 }
+
+const mapDispatchToProps = (dispatch) => {
+  // login: authActions.login,
+  return {
+    getSignal: (params) => dispatch(Action.getSignal(params)),
+  };
+};
+
+const mapStateToProps = (store) => ({
+  isSubscribed: store.auth.subscriptionActive,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(HistoryCurrency);

@@ -14,27 +14,16 @@ import {WP} from '../../utils/Responsive';
 import * as Actions from '../../user/actionIndex';
 import {useEffect, useState} from 'react';
 import {connect} from 'react-redux';
-const Home = (props) => {
-  const [data, setData] = useState([{win : 0},{loss: 0}, {total : 0}]);
-  const [load, setLoading] = useState(true);
+const TradingType = (props) => {
+  const [data, setData] = useState(props.route.params.api_data);
+  const [load, setLoading] = useState(false);
   const [percentage, setPercentage] = useState(0);
 
+
   useEffect(() => {
-    getStats();
-  }, []);
-
-  const getStats = () => {
-    setLoading(true);
-    props.getStats().then((response) => {
-      setLoading(false);
-      if (response !== undefined) {
-        console.log(response);
-        setData(response);
-        setLoading(false);
-      }
-    });
-  };
-
+      console.log("+++++++++++++=",props.route.params)
+      
+  }, [])
   const calculatePercentage = () => {
     let win = parseInt(data[0].win);
     let loss = parseInt(data[1].loss);
@@ -47,25 +36,27 @@ const Home = (props) => {
 
   return (
     <View style={{width: '100%', height: '100%', marginTop: WP(5)}}>
-      <Navbar title={'Home'} />
-      { 
+      <Navbar title={props.route.params.title} hasBack = {true} hasDrawer = {false} />
+      {load ? (
+        <ActivityIndicator></ActivityIndicator>
+      ) : (
+        [
+          data[0] !== undefined ? (
             <View style={{ flex: 1}}>
-            
               <View style={styles.container}>
                 <View style={styles.upperSubContainer}>
                   <TouchableOpacity 
-                  onPress={()=>props.navigation.navigate("TradingType",{api_data : data,title : "Day Trading",type : 0})}
+                    onPress={()=>props.navigation.navigate("History")}
                   style={{alignItems: 'center'}}>
-                    <Text style={styles.heading1}>Day Trading</Text>
+                    <Text style={styles.heading1}>History</Text>
                     <Image
                       style={styles.image1}
                       source={require('../../assets/icons/day_trading.jpg')}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
-                  onPress={()=>props.navigation.navigate("TradingType",{api_data : data,title : "Swing Trading",type : 1})}
                     style={{alignItems: 'center', marginLeft: WP(12)}}>
-                    <Text style={styles.heading1}>Swing Trading</Text>
+                    <Text style={styles.heading1}>Today </Text>
                     <Image
                       style={styles.image1}
                       source={require('../../assets/icons/swing_trading.jpg')}
@@ -112,11 +103,10 @@ const Home = (props) => {
                   </View>
                 </View>
               </View>
-              {load ? <ActivityIndicator style= {{position : 'absolute' ,top : 0, left : 0, right : 0, bottom : 0, zIndex : 10}} size="large" color="#0000ff"/> : null}
-      
             </View>
-      
-      }
+          ) : null,
+        ]
+      )}
     </View>
   );
 };
@@ -215,4 +205,4 @@ const mapDispatchToProps = (dispatch) => {
 
 const mapStateToProps = (store) => ({});
 
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+export default connect(mapStateToProps, mapDispatchToProps)(TradingType);

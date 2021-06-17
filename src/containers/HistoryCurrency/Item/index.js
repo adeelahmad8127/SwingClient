@@ -22,10 +22,9 @@ export default class Item extends Component {
   };
 
   renderPairs() {
-    console.log('this.props', this.props.data);
     const {index, data} = this.props;
     const textColor = index % 2 && {color: '#3399ff'};
-    return <Text style={[styles.pairText, textColor]}>{data.currency}</Text>;
+    return <Text style={[styles.pairText, textColor]}>{data.currency_pairs}</Text>;
   }
 
   renderStatus() {
@@ -45,12 +44,12 @@ export default class Item extends Component {
   }
 
   renderProfitLoss() {
-    const {profit_loss, status} = this.props.data;
-    const pl = Math.sign(profit_loss) === 1 ? `+${profit_loss}` : profit_loss;
+    let data = this.props.data;
+    const pl = Math.sign(data.stope_loss) === 1 ? `+${data.stope_loss}` : data.stope_loss;
     let color;
-    if (status === 'Target') {
+    if (data.status === 'Target') {
       color = Colors.green;
-    } else if (status === 'StopLoss') {
+    } else if (data.status === 'StopLoss') {
       color = 'red';
     }
     return (
@@ -62,23 +61,22 @@ export default class Item extends Component {
   }
 
   renderButton() {
-    const {profit_loss, signal} = this.props.data;
+    const {profit_loss, order_type} = this.props.data;
     // const type = Math.sign(profit_loss) === 1 ? 'BUY' : 'SELL';
     // const color = Math.sign(profit_loss) === 1 ? Colors.green : 'red';
     let type;
     let color;
-    console.log('signal', signal);
     if (
-      signal === 'Buy at Market' ||
-      signal === 'Buy Limit' ||
-      signal === 'Buy Stop'
+      order_type === 'Buy at Market' ||
+      order_type === 'Buy Limit' ||
+      order_type === 'Buy Stop'
     ) {
       type = 'BUY';
       color = Colors.green;
     } else if (
-      signal === 'Sell Limit' ||
-      signal === 'Sell Stop' ||
-      signal === 'Sell at Market'
+      order_type === 'Sell Limit' ||
+      order_type === 'Sell Stop' ||
+      order_type === 'Sell at Market'
     ) {
       color = 'red';
       type = 'SELL';
