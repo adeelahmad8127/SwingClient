@@ -33,7 +33,7 @@ class DrawerComponent extends Component {
     unubscribeToTopic();
     this.props.logout();
     this.logoutUser()
-    NavigationService.reset('Login');
+    this.props.navigation.navigate('Login')
     
     // auth()
     //   .signOut()

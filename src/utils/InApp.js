@@ -46,6 +46,7 @@ class InApp {
       DataHandler.setIAPTrue();
     } catch (err) {
       console.warn(err.code, err.message);
+      this.purchaseErrorHandler(err.code)
       alert('Error: ' + err.message);
     }
   };
@@ -261,7 +262,7 @@ class InApp {
         console.log('error', error);
         this.successHandler === undefined
           ? callback(false)
-          : this.successHandler(false);
+          : this.purchaseErrorHandler();
       });
   };
 

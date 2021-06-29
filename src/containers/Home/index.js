@@ -14,13 +14,17 @@ import {WP} from '../../utils/Responsive';
 import * as Actions from '../../user/actionIndex';
 import {useEffect, useState} from 'react';
 import {connect} from 'react-redux';
+import { setType } from './TradingType';
 const Home = (props) => {
   const [data, setData] = useState([{win : 0},{loss: 0}, {total : 0}]);
   const [load, setLoading] = useState(true);
   const [percentage, setPercentage] = useState(0);
-
+  const [route, setRoute] = useState(null)
   useEffect(() => {
     getStats();
+    props.navigation.addListener('focus', () => {
+      setRoute("TradingType")
+    })
   }, []);
 
   const getStats = () => {
@@ -54,7 +58,9 @@ const Home = (props) => {
               <View style={styles.container}>
                 <View style={styles.upperSubContainer}>
                   <TouchableOpacity 
-                  onPress={()=>props.navigation.navigate("TradingType",{api_data : data,title : "Day Trading",type : 0})}
+                  onPress={()=>{
+                    props.navigation.navigate(route,{api_data : data,title : "Day Trading",type : 0})
+                }}
                   style={{alignItems: 'center'}}>
                     <Text style={styles.heading1}>Day Trading</Text>
                     <Image
@@ -63,7 +69,9 @@ const Home = (props) => {
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
-                  onPress={()=>props.navigation.navigate("TradingType",{api_data : data,title : "Swing Trading",type : 1})}
+                  onPress={()=>{
+                    props.navigation.navigate(route,{api_data : data,title : "Swing Trading",type : 1})
+                  }}
                     style={{alignItems: 'center', marginLeft: WP(12)}}>
                     <Text style={styles.heading1}>Swing Trading</Text>
                     <Image

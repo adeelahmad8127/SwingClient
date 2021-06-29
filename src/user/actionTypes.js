@@ -50,7 +50,7 @@ export const login = (params) => {
   export const getHistory = (params) => {
     return async (dispatch) => {
       let response = await Api.get(
-          `signal/list/`,
+          `signal/list?trading_type=` + params.type,
       params);
       if (response ===undefined){
         alert("Something went wrong")
@@ -64,7 +64,7 @@ export const login = (params) => {
   export const getSignal = (params) => {
     return async (dispatch) => {
       let response = await Api.get(
-          `signal/2021-05-14/`);
+          `signalHistory?created_date=` + params.date + '&trading_type='+params.type);
       if (response ===undefined){
         alert("Something went wrong")
       }
@@ -73,6 +73,60 @@ export const login = (params) => {
   };
 
 
+  
+
+  export const createSignal = (params) => {
+    return async (dispatch) => {
+      let response = await Api.post(
+          `signal`,
+      params);
+      console.log(response + "")
+      if (response ===undefined){
+        Alert.alert("Invalid Response")
+      }
+      return response;
+    };
+  };
+
+  
+  export const updateSignal = (params) => {
+    return async (dispatch) => {
+      let response = await Api.put(
+          `signal`,
+      params);
+      if (response ===undefined){
+        Alert.alert("Invalid Response")
+      }
+      return response;
+    };
+  };
+
+
+  
+  export const checkSubscription = (params) => {
+    return async (dispatch) => {
+      let response = await Api.get(
+          `accounts/subscription?user_id=`+params.id);
+      return response;
+    };
+  };
+
+  
+
+  export const purchaseSubscription = (params) => {
+    return async (dispatch) => {
+      let response = await Api.post(
+        `accounts/subscription`,
+      params);
+      console.log(response + "")
+      if (response ===undefined){
+        Alert.alert("Invalid Response")
+      }
+      return response;
+    };
+  };
+
+  checkSubscription
 // export const placeOrder = (params) => {
 //     return async (dispatch) => {
 //       let response = await Api.post('customer/placeOrder', params);

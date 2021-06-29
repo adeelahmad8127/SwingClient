@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   Text,
   View,
@@ -9,28 +9,28 @@ import {
   Linking,
   Platform,
 } from 'react-native';
-import {storeData, getData} from '../../utils/LocalDB';
+import { storeData, getData } from '../../utils/LocalDB';
 import * as Actions from '../../user/actionIndex';
 import auth from '@react-native-firebase/auth';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import firebase from 'firebase';
-import {BannerView, AdSettings} from 'react-native-fbads';
+import { BannerView, AdSettings } from 'react-native-fbads';
 
 import styles from './styles';
 
-import {NavigationService, DataHandler} from '../../utils';
-import {authActions} from '../../ducks/auth';
-import {Loader} from '../../common';
-import {subscribeToTopic} from '../../utils/FirebaseUtil';
+import { NavigationService, DataHandler } from '../../utils';
+import { authActions } from '../../ducks/auth';
+import { Loader } from '../../common';
+import { subscribeToTopic } from '../../utils/FirebaseUtil';
 import Images from '../../theme/Images';
-import {ScrollView} from 'react-native-gesture-handler';
-import {LoginManager} from 'react-native-fbsdk';
-import {login} from '../../ducks/auth/actions';
+import { ScrollView } from 'react-native-gesture-handler';
+import { LoginManager } from 'react-native-fbsdk';
+import { login } from '../../ducks/auth/actions';
 
 class Login extends Component {
   state = {
-    email: 'hassan123',
-    password: 'eee113311',
+    email: '',
+    password: '',
     errorMessage: '',
     loading: false,
   };
@@ -42,27 +42,51 @@ class Login extends Component {
   }
 
   checkIsUserSubscribe = (uid) => {
-    firebase
-      .database()
-      .ref(`users/${uid}`)
-      .once('value', (snapshot) => {
-        console.log('snapshot.val()', snapshot.val());
-        const {is_subscribe} = snapshot.val();
-        if (snapshot.val().is_subscribe) {
+
+    let params = {
+      id : uid
+    }
+
+    console.log(params)
+
+    this.props.checkSubscription(params).then(response => {
+      if (response != undefined) {
+        if (response.is_subscribed) {
           subscribeToTopic();
-          NavigationService.reset('DrawerScreen');
+          this.props.navigation.navigate('DrawerScreen')
           DataHandler.setUserSubscribe(is_subscribe);
-          this.props.login({uid});
-          this.setState({loading: false});
+          this.setState({ loading: false });
         } else {
-          NavigationService.reset('Subscription');
-          this.props.login({uid});
+          this.props.navigation.navigate('Subscription',{id : uid})
+          this.setState({ loading: false });
         }
-      });
+      }else {
+        this.props.navigation.navigate('Subscription',{id : uid})
+        this.setState({ loading: false });
+      }
+    })
+
+    // firebase
+    //   .database()
+    //   .ref(`users/${uid}`)
+    //   .once('value', (snapshot) => {
+    //     console.log('snapshot.val()', snapshot.val());
+    //     const {is_subscribe} = snapshot.val();
+    //     if (snapshot.val().is_subscribe) {
+    //       subscribeToTopic();
+    //       NavigationService.reset('DrawerScreen');
+    //       DataHandler.setUserSubscribe(is_subscribe);
+    //       this.props.login({uid});
+    //       this.setState({loading: false});
+    //     } else {
+    //       NavigationService.reset('Subscription');
+    //       this.props.login({uid});
+    //     }
+    //   });
   };
 
   onSignIn = () => {
-    const {email, password} = this.state;
+    const { email, password } = this.state;
     if (email !== '' && password !== '') {
       const trimedEmail = email.trim().toLowerCase();
       const trimedPassword = password.trim();
@@ -70,19 +94,15 @@ class Login extends Component {
         username: email,
         password: password,
       };
-      this.setState({loading: true}, () => {
+      this.setState({ loading: true }, () => {
         this.props
           .login(params)
           .then((user) => {
-            this.setState({loading: false});
-            if (user !==undefined){
+            this.setState({ loading: false });
+            if (user !== undefined) {
               this.handleSignInResult(user);
-              NavigationService.reset('DrawerScreen');
             }
-            // console.log('user', user);
-            // const {uid} = user.user._user;
-            // const {isSubscribed} = this.props;
-            // // this.checkIsUserSubscribe(uid); //open it
+            this.checkIsUserSubscribe(user.user.pk); //open it
             // console.log('isSubscribed', isSubscribed);
             // if (isSubscribed) {
             //   // this.props.login({uid});
@@ -132,7 +152,7 @@ class Login extends Component {
   };
 
   onFocus = () => {
-    this.setState({errorMessage: ''});
+    this.setState({ errorMessage: '' });
   };
 
   onCreateAccPress = () => {
@@ -140,15 +160,15 @@ class Login extends Component {
   };
 
   onChangeEmail = (email) => {
-    this.setState({email});
+    this.setState({ email });
   };
 
   onChangePassword = (password) => {
-    this.setState({password});
+    this.setState({ password });
   };
 
   renderEmail() {
-    const {email} = this.props;
+    const { email } = this.props;
     return (
       <TextInput
         keyboardType="email-address"
@@ -158,7 +178,7 @@ class Login extends Component {
         placeholderTextColor="#ccc"
         placeholder={'Username'}
         style={styles.inputField}
-        autoCapitalize= "none"
+        autoCapitalize="none"
         onChangeText={this.onChangeEmail}
         value={email}
         onFocus={this.onFocus}
@@ -167,7 +187,7 @@ class Login extends Component {
   }
 
   renderPassword() {
-    const {password} = this.props;
+    const { password } = this.props;
     return (
       <TextInput
         keyboardType="default"
@@ -177,14 +197,14 @@ class Login extends Component {
         onChangeText={this.onChangePassword}
         value={password}
         secureTextEntry
-        autoCapitalize= "none"
+        autoCapitalize="none"
         onFocus={this.onFocus}
       />
     );
   }
 
   renderErrorMessage() {
-    const {errorMessage} = this.state;
+    const { errorMessage } = this.state;
     if (errorMessage === '') {
       return null;
     }
@@ -220,7 +240,7 @@ class Login extends Component {
   }
 
   renderLoader() {
-    const {loading} = this.state;
+    const { loading } = this.state;
     return <Loader loading={loading} color={'#fff'} />;
   }
 
@@ -233,7 +253,7 @@ class Login extends Component {
             Linking.openURL('https://forexprofitbot.com/privacy-policy/');
           }}
         />
-        <Text style={{color: '#fff'}}>and</Text>
+        <Text style={{ color: '#fff' }}>and</Text>
         <Button
           title="Terms of use"
           onPress={() => {
@@ -249,7 +269,7 @@ class Login extends Component {
   render() {
     return (
       <ScrollView
-        style={{backgroundColor: '#000'}}
+        style={{ backgroundColor: '#000' }}
         contentContainerStyle={styles.container}>
         {this.renderLogo()}
         {this.renderEmail()}
@@ -267,6 +287,7 @@ const actions = (dispatch) => {
   // login: authActions.login,
   return {
     login: (params) => dispatch(Actions.login(params)),
+    checkSubscription: (params) => dispatch(Actions.checkSubscription(params))
   };
 };
 

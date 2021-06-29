@@ -52,7 +52,7 @@ class Api {
     }
   
 
-    console.log('options',options);
+    console.log('options',url);
 
     // console.log('url is ', url)
     // console.log('options is ', options)

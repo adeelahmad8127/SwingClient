@@ -1,1 +1,1 @@
-export {login, signup, getStats,getHistory,getSignal} from './actionTypes';
+export {login, signup, getStats,getHistory,getSignal,checkSubscription,purchaseSubscription} from './actionTypes';

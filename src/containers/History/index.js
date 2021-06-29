@@ -1,5 +1,5 @@
-import React, {Component,useState,useEffect} from 'react';
-import {FlatList, ActivityIndicator,View,Text} from 'react-native';
+import React, {Component,useState,useEffect,useRef} from 'react';
+import {FlatList, ActivityIndicator,BackHandler,View,Text,AppState} from 'react-native';
 import firebase from 'firebase';
 import moment from 'moment';
 import _ from 'lodash';
@@ -9,20 +9,32 @@ import {Navbar, Loader} from '../../common';
 import auth from '@react-native-firebase/auth';
 import {authActions} from '../../ducks/auth';
 import {connect} from 'react-redux';
+import * as actions from '../../user/actionTypes'
 import * as Action from '../../user/actionIndex'
 
-import * as actions from '../../user/actionTypes'
 import { WP } from '../../utils/Responsive';
+import Toast from 'react-native-tiny-toast';
 
 
 const History =(props)=> {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState([])
   const [nodata, setNoData] = useState(false)
+  const appState = useRef(AppState.currentState);
+  const [appStateVisible, setAppStateVisible] = useState(AppState.current);
+  const [type, setType] = useState("")
+  
+  // useEffect(() => {
+  //   props.navigation.addListener('focus', () => {
+  //     getData()
+  //   })
+  // }, [])
 
-
-  useEffect(() => {
-    props.getHistory().then(response =>{
+  const getData =()=>{
+    let params = { type : props.route.params.title}
+    console.log(params)
+    setData([])
+    props.getHistory(params).then(response =>{
       setLoading(false)
       if (response !==undefined) {
         setData(response)
@@ -30,10 +42,34 @@ const History =(props)=> {
         setNoData(true)
       }
     })
-  }, [])
+  }
 
+  useEffect(() => {
+    console.log('props',props.route.params.title)
+    getData()
+
+    // const backHandler = BackHandler.addEventListener(
+    //   "hardwareBackPress",
+    //   backAction
+    // );
+    // return () => backHandler.remove()
+  }, [props.route.params.title]);
+  
+  const _handleAppStateChange = (nextAppState) => {
+    if (
+      appState.current.match(/inactive|background/) &&
+      nextAppState === "active"
+    ) {
+      console.log("App has come to the foreground!");
+    }
+
+    appState.current = nextAppState;
+    setAppStateVisible(appState.current);
+    console.log("AppState", appState.current);
+  };
 
   const renderItem = ({item, index}) => {
+    item.type = props.route.params.title
     return <Item data={item} />;
   };
 

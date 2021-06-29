@@ -7,6 +7,7 @@ export default class Item extends Component {
   onDatePress = () => {
     NavigationService.navigate('HistoryCurrency', {
       date: this.props.data.created_date,
+      type : this.props.data.type
     });
   };
 

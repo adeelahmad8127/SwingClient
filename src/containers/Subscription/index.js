@@ -19,6 +19,7 @@ import {NavigationService, DataHandler, InApp} from '../../utils';
 import {Loader} from '../../common';
 import {authActions} from '../../ducks/auth';
 import {ScrollView} from 'react-native-gesture-handler';
+import * as Actions from '../../user/actionIndex';
 
 functions().useFunctionsEmulator('http://localhost:8081');
 
@@ -26,6 +27,7 @@ class Subscription extends Component {
   state = {
     loader: false,
   };
+  
 
   // componentWillMount() {
   //   InApp.remove();
@@ -48,27 +50,19 @@ class Subscription extends Component {
 
   subscribeUser = () => {
     // const {uid} = this.props;
-    const uid = auth().currentUser?.uid;
+    
+    let params = {
+      user_id : this.props.id,
+      is_subscribed : true
+    }
 
-    firebase
-      .database()
-      .ref(`/users/${uid}`)
-      .update({
-        is_subscribe: true,
-      })
-      .then(() => {
-        this.setState({loading: false}, () => {
-          subscribeToTopic();
-          DataHandler.setUserSubscribe(true);
-          NavigationService.reset('DrawerScreen');
-        });
-      })
-      .catch((error) => {
-        this.setState({
-          loading: false,
-          errorMessage: 'Something went wrong. Please try Again',
-        });
-      });
+    this.props.purchaseSubscription(params).then(res =>{
+      if(res!=undefined){
+        if (res[0].get.is_subscribed) {
+          this.props.navigation.navigate("DrawerScreen")
+        }
+      }
+    })
   };
 
   onSubscribePress = async () => {
@@ -107,23 +101,23 @@ class Subscription extends Component {
 
     this.setState({loading: true});
     
-    //By Pass Security
-    subscribeToTopic();
-    NavigationService.reset('DrawerScreen');
-    // InApp.requestSubscription('', (success) => {
-    //   if (success) {
-    //     // this.subscribeUser();
-    //     console.log('Item Successfully Purchsased');
-    //     this.props.updateSubscription(true);
-    //     subscribeToTopic();
-    //     NavigationService.reset('DrawerScreen');
-    //     // this._sendSubscribeRequest(AppUtil.subscriptionData(item));
-    //     // eslint-disable-next-line no-empty
-    //     this.setState({loading: false});
-    //   } else {
-    //     this.setState({loading: false});
-    //   }
-    // });
+    // By Pass Security
+    // subscribeToTopic();
+    // NavigationService.reset('DrawerScreen');
+    InApp.requestSubscription('', (success) => {
+      if (success) {
+        this.subscribeUser();
+        console.log('Item Successfully Purchsased');
+        this.props.updateSubscription(true);
+        subscribeToTopic();
+        NavigationService.reset('DrawerScreen');
+        // this._sendSubscribeRequest(AppUtil.subscriptionData(item));
+        // eslint-disable-next-line no-empty
+        this.setState({loading: false});
+      } else {
+        this.setState({loading: false});
+      }
+    });
   };
 
   renderLogo() {
@@ -234,12 +228,13 @@ class Subscription extends Component {
   }
 }
 
-const action = {
-  updateSubscription: authActions.updateSubscription,
+const mapDispatchToProps =()=> {
+  return {
+    purchaseSubscription: (params) => dispatch(Actions.purchaseSubscription(params))
+  }
 };
 
 const mapStateToProps = (store) => ({
-  uid: store.auth.uid,
 });
 
-export default connect(mapStateToProps, action)(Subscription);
+export default connect(mapStateToProps, mapDispatchToProps)(Subscription);

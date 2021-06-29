@@ -36,18 +36,11 @@ function DrawerScreen() {
       drawerContent={(props) => <DrawerComponent {...props} />}
       initialRouteName="FormSignal">
       <Stack.Screen name="Home" component={Home} options={options} />
-      <Stack.Screen name="TradingType" component={TradingType} options={options} />
-      <Stack.Screen name="History" component={History} options={options} />
       {/* <Stack.Screen
         name="Form Signal"
         component={FormSignal}
         options={options}
       /> */}
-      <Stack.Screen
-        name="Today Signal"
-        component={TodaySignal}
-        options={options}
-      />
       <Stack.Screen
         name="Risk Disclimer"
         component={RiskDisclimer}
@@ -94,6 +87,16 @@ function stackScreens(initialRouteName) {
       <Stack.Screen
         name="Risk Disclimer"
         component={RiskDisclimer}
+        options={options}
+      />
+      
+      <Stack.Screen name="History" component={History} options={options} />
+      <Stack.Screen name="TradingType" component={TradingType} options={options} />
+      
+      <Stack.Screen
+        name="Today Signal"
+        component={HistoryCurrency}
+        initialParams={{calledFrom : "home"}}
         options={options}
       />
     </Stack.Navigator>

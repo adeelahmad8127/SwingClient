@@ -1,29 +1,46 @@
-import {head} from 'lodash';
-import React, {Component} from 'react';
+import { head } from 'lodash';
+import React, { Component } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
+  BackHandler,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 
-import {Navbar} from '../../common';
-import {WP} from '../../utils/Responsive';
+
+import { Navbar } from '../../common';
+import { WP } from '../../utils/Responsive';
 import * as Actions from '../../user/actionIndex';
-import {useEffect, useState} from 'react';
-import {connect} from 'react-redux';
+import { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 const TradingType = (props) => {
   const [data, setData] = useState(props.route.params.api_data);
   const [load, setLoading] = useState(false);
   const [percentage, setPercentage] = useState(0);
+  const [type, setType] = useState("Day Trading")
+  const isFocused = useIsFocused();
 
 
+  let params = {
+    api_data: data, title: type, calledFrom: 'home'   
+  }
+
+  let historyParams = {
+    title : "Day Trading"
+  }
+  // const handleBackButtonClick=()=> {
+  //   props.navigation.pop(1);
+  //   return true;
+  // }
   useEffect(() => {
-      console.log("+++++++++++++=",props.route.params)
-      
-  }, [])
+    console.log(props.route.params.title)
+    params.title = props.route.params.title
+    historyParams.title = props.route.params.title
+  }, [props.route.params.title])
   const calculatePercentage = () => {
     let win = parseInt(data[0].win);
     let loss = parseInt(data[1].loss);
@@ -35,19 +52,19 @@ const TradingType = (props) => {
   };
 
   return (
-    <View style={{width: '100%', height: '100%', marginTop: WP(5)}}>
-      <Navbar title={props.route.params.title} hasBack = {true} hasDrawer = {false} />
+    <View style={{ width: '100%', height: '100%', marginTop: WP(5) }}>
+      <Navbar title={props.route.params.title} hasBack={true} hasDrawer={false} />
       {load ? (
         <ActivityIndicator></ActivityIndicator>
       ) : (
         [
           data[0] !== undefined ? (
-            <View style={{ flex: 1}}>
+            <View style={{ flex: 1 }}>
               <View style={styles.container}>
                 <View style={styles.upperSubContainer}>
-                  <TouchableOpacity 
-                    onPress={()=>props.navigation.navigate("History")}
-                  style={{alignItems: 'center'}}>
+                  <TouchableOpacity
+                    onPress={() => props.navigation.navigate("History", { title: props.route.params.title })}
+                    style={{ alignItems: 'center' }}>
                     <Text style={styles.heading1}>History</Text>
                     <Image
                       style={styles.image1}
@@ -55,8 +72,9 @@ const TradingType = (props) => {
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{alignItems: 'center', marginLeft: WP(12)}}>
-                    <Text style={styles.heading1}>Today </Text>
+                    onPress={() => { props.navigation.navigate("HistoryCurrency",params)} }
+                    style={{ alignItems: 'center', marginLeft: WP(12) }}>
+                    <Text style={styles.heading1}>Today Signal</Text>
                     <Image
                       style={styles.image1}
                       source={require('../../assets/icons/swing_trading.jpg')}
@@ -65,15 +83,15 @@ const TradingType = (props) => {
                 </View>
                 <View style={styles.lowerSubContainer}>
                   <Text style={styles.heading2}>Signal Performance</Text>
-                  <View style={{flexDirection: 'row', marginTop: WP(5)}}>
-                    <View style={{alignItems: 'center'}}>
+                  <View style={{ flexDirection: 'row', marginTop: WP(5) }}>
+                    <View style={{ alignItems: 'center' }}>
                       <View style={styles.circleBlack}>
                         <Text style={styles.percentValue}>{data[2].total}</Text>
                       </View>
                       <Text style={styles.heading3}>Total Trades</Text>
                     </View>
 
-                    <View style={{alignItems: 'center', marginLeft: WP(10)}}>
+                    <View style={{ alignItems: 'center', marginLeft: WP(10) }}>
                       <View style={styles.circleBlack}>
                         <Text style={styles.percentValue}>
                           {calculatePercentage()}
@@ -82,8 +100,8 @@ const TradingType = (props) => {
                       <Text style={styles.heading3}>Winning%</Text>
                     </View>
                   </View>
-                  <View style={{flexDirection: 'row', marginTop: WP(5)}}>
-                    <View style={{alignItems: 'center'}}>
+                  <View style={{ flexDirection: 'row', marginTop: WP(5) }}>
+                    <View style={{ alignItems: 'center' }}>
                       <View style={styles.circleGreen}>
                         <Text style={styles.percentValueGreen}>
                           {data[0].win}
@@ -92,7 +110,7 @@ const TradingType = (props) => {
                       <Text style={styles.percentValueGreen}>Wins</Text>
                     </View>
 
-                    <View style={{alignItems: 'center', marginLeft: WP(10)}}>
+                    <View style={{ alignItems: 'center', marginLeft: WP(10) }}>
                       <View style={styles.circleRed}>
                         <Text style={styles.percentValueRed}>
                           {data[1].loss}
