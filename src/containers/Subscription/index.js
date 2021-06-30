@@ -20,6 +20,7 @@ import {Loader} from '../../common';
 import {authActions} from '../../ducks/auth';
 import {ScrollView} from 'react-native-gesture-handler';
 import * as Actions from '../../user/actionIndex';
+import { storeData, getData } from '../../utils/LocalDB';
 
 functions().useFunctionsEmulator('http://localhost:8081');
 
@@ -43,10 +44,16 @@ class Subscription extends Component {
   }
 
   logout = () => {
-    auth().signOut();
+    // auth().signOut();
     NavigationService.reset('Login');
-    console.log('signOut');
+    // console.log('signOut');
+    this.logoutUser();
   };
+
+  
+  logoutUser= async()=>{
+    await storeData("user_data","")
+  }
 
   subscribeUser = () => {
     // const {uid} = this.props;
@@ -58,7 +65,7 @@ class Subscription extends Component {
 
     this.props.purchaseSubscription(params).then(res =>{
       if(res!=undefined){
-        if (res[0].get.is_subscribed) {
+        if (res[0].is_subscribed) {
           this.props.navigation.navigate("DrawerScreen")
         }
       }

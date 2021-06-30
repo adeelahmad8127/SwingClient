@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   Text,
   View,
@@ -11,18 +11,18 @@ import {
   Linking,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import firebase from 'firebase';
 import * as Actions from '../../user/actionIndex';
-import {storeData} from '../../utils/LocalDB'
+import { storeData } from '../../utils/LocalDB'
 
 import styles from './styles';
-import {authActions} from '../../ducks/auth';
+import { authActions } from '../../ducks/auth';
 
-import {NavigationService, DataHandler} from '../../utils';
-import {Loader} from '../../common';
+import { NavigationService, DataHandler } from '../../utils';
+import { Loader } from '../../common';
 import AsyncStorage from '@react-native-community/async-storage';
-import {subscribeToTopic} from '../../utils/FirebaseUtil';
+import { subscribeToTopic } from '../../utils/FirebaseUtil';
 import Images from '../../theme/Images';
 
 class Signup extends Component {
@@ -38,37 +38,64 @@ class Signup extends Component {
   };
 
   createNewUser = async () => {
-    const {email, password,name} = this.state;
+    const { email, password, name } = this.state;
     const trimedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim()
     const trimedPassword = password.trim()
     let fcmToken = await AsyncStorage.getItem('fcmToken');
     let params = {
-      username : trimmedName,
-      email : trimedEmail,
-      password1 : trimedPassword,
-      password2 : password,
+      username: trimmedName,
+      email: trimedEmail,
+      password1: trimedPassword,
+      password2: password,
     }
-    this.props.signup(params).then(response =>{
-      if (response!==undefined) {
+    this.props.signup(params).then(response => {
+      if (response !== undefined) {
         this.handleSignUpResult(response)
-        NavigationService.reset('DrawerScreen');
+        this.checkIsUserSubscribe(response.user.pk)
       }
     })
-    
+
   };
 
-  
+
+  checkIsUserSubscribe = (uid) => {
+
+    let params = {
+      id: uid
+    }
+
+    console.log(params)
+
+    this.props.checkSubscription(params).then(response => {
+      if (response != undefined) {
+        if (response.is_subscribed) {
+          subscribeToTopic();
+          this.props.navigation.navigate('DrawerScreen')
+          // DataHandler.setUserSubscribe(is_subscribe);
+          this.setState({ loading: false });
+        } else {
+          this.props.navigation.navigate('Subscription', { id: uid })
+          this.setState({ loading: false });
+        }
+      } else {
+        this.props.navigation.navigate('Subscription', { id: uid })
+        this.setState({ loading: false });
+      }
+    })
+  };
+
+
   handleSignUpResult = async (user) => {
     await storeData('user_data', JSON.stringify(user));
   };
 
   onCreateAcc = () => {
-    const {email, password,name} = this.state;
-    if (email !== '' && password !== ''&& name !== '' && password.length >= 8) {
+    const { email, password, name } = this.state;
+    if (email !== '' && password !== '' && name !== '' && password.length >= 8) {
       console.log('email', email, '|');
       console.log('password', password);
-      this.setState({loading: true}, () => {
+      this.setState({ loading: true }, () => {
         this.createNewUser();
       });
     } else {
@@ -79,7 +106,7 @@ class Signup extends Component {
   };
 
   onFocus = () => {
-    this.setState({errorMessage: ''});
+    this.setState({ errorMessage: '' });
   };
 
   onAlreadyHavAcc = () => {
@@ -87,40 +114,40 @@ class Signup extends Component {
   };
 
   onChangeName = (name) => {
-    this.setState({name});
+    this.setState({ name });
   };
 
   onChangeEmail = (email) => {
-    this.setState({email});
+    this.setState({ email });
   };
 
   onChangePassword = (password) => {
-    this.setState({password});
+    this.setState({ password });
   };
 
   renderName() {
-    const {name} = this.state;
+    const { name } = this.state;
     return (
       <TextInput
         placeholderTextColor="#ccc"
         placeholder={'Enter Name'}
         style={styles.inputField}
         onChangeText={this.onChangeName}
-        autoCapitalize= "none"
+        autoCapitalize="none"
         value={name}
       />
     );
   }
 
   renderEmail() {
-    const {email} = this.state;
+    const { email } = this.state;
     return (
       <TextInput
         keyboardType="email-address"
         textContentType="emailAddress"
         autoCorrect={false}
         placeholderTextColor="#ccc"
-        autoCapitalize= "none"
+        autoCapitalize="none"
         placeholder={'Email'}
         style={styles.inputField}
         onChangeText={this.onChangeEmail}
@@ -131,14 +158,14 @@ class Signup extends Component {
   }
 
   renderPassword() {
-    const {password} = this.state;
+    const { password } = this.state;
     return (
       <TextInput
         textContentType="password"
         placeholderTextColor="#ccc"
         placeholder={'Password'}
         style={styles.inputField}
-        autoCapitalize= "none"
+        autoCapitalize="none"
         onChangeText={this.onChangePassword}
         value={password}
         secureTextEntry
@@ -148,7 +175,7 @@ class Signup extends Component {
   }
 
   renderErrorMessage() {
-    const {errorMessage} = this.state;
+    const { errorMessage } = this.state;
     if (errorMessage === '') {
       return null;
     }
@@ -184,7 +211,7 @@ class Signup extends Component {
   }
 
   renderLoader() {
-    const {loading} = this.state;
+    const { loading } = this.state;
     return <Loader loading={loading} color={'#fff'} />;
   }
 
@@ -197,7 +224,7 @@ class Signup extends Component {
             Linking.openURL('https://forexprofitbot.com/privacy-policy/');
           }}
         />
-        <Text style={{color: '#fff'}}>and</Text>
+        <Text style={{ color: '#fff' }}>and</Text>
         <Button
           title="Terms of use"
           onPress={() => {
@@ -213,7 +240,7 @@ class Signup extends Component {
   render() {
     return (
       <ScrollView
-        style={{backgroundColor: '#000'}}
+        style={{ backgroundColor: '#000' }}
         contentContainerStyle={styles.container}>
         {this.renderLogo()}
         {this.renderName()}
@@ -233,6 +260,7 @@ const actions = (dispatch) => {
   // login: authActions.login,
   return {
     signup: (params) => dispatch(Actions.signup(params)),
+    checkSubscription: (params) => dispatch(Actions.checkSubscription(params))
   };
 };
 

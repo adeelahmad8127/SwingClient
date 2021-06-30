@@ -19,18 +19,19 @@ import {
 import SplashScreen from 'react-native-splash-screen';
 import auth from '@react-native-firebase/auth';
 
-import {getData} from './utils/LocalDB';
+import { getData } from './utils/LocalDB';
 
-import {Provider, connect} from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import firebase from 'firebase';
 import React from 'react';
 import IAP from 'react-native-iap';
-import {BannerView, AdSettings} from 'react-native-fbads';
+import { BannerView, AdSettings } from 'react-native-fbads';
 
-import {DataHandler, FirebaseUtil, ConfigureApp} from './utils';
+import { DataHandler, FirebaseUtil, ConfigureApp } from './utils';
 import AppNavigator from './navigator';
 import configureStore from './store';
-import {AppStyles} from './theme';
+import { BASE_URL } from './utils/Config';
+import { AppStyles } from './theme';
 import {
   requestUserPermission,
   getFcmToken,
@@ -39,7 +40,7 @@ import {
   subscribeToTopic,
 } from './utils/FirebaseUtil';
 import InApp from './utils/InApp';
-import {authActions} from './ducks/auth';
+import { authActions } from './ducks/auth';
 
 ConfigureApp();
 
@@ -48,7 +49,7 @@ export default class App extends React.Component {
     super(props);
     configureStore((store) => {
       this.checkUserLogin();
-      this.setState({store});
+      this.setState({ store });
       // DataHandler.setUserLogin(isUserLoggedIn);
       DataHandler.setStore(store);
       // this.initSettings(store);
@@ -56,7 +57,7 @@ export default class App extends React.Component {
     });
   }
 
-  componentWillMount() {}
+  componentWillMount() { }
 
   componentDidMount() {
     SplashScreen.hide();
@@ -83,11 +84,13 @@ export default class App extends React.Component {
     store: null,
     isUserLoggedIn: false,
     isActiveSubscription: null,
+    userId: null,
+    subscribed: false
   };
 
   initSettings = (store) => {
-    const {isUserLoggedIn} = store.getState().auth;
-    this.setState({store});
+    const { isUserLoggedIn } = store.getState().auth;
+    this.setState({ store });
     DataHandler.setUserLogin(isUserLoggedIn);
     DataHandler.setStore(store);
     getFcmToken();
@@ -95,10 +98,27 @@ export default class App extends React.Component {
     this.validateUserSubscription(store);
   };
 
+  checkSubscription = (id) => {
+    fetch(BASE_URL + '/accounts/subscription?user_id=' + id)
+      .then((response) => response.json())
+      .then((json) => {
+        if (json.user_id !== undefined) {
+
+          console.log("CHECK", json);
+          this.setState({isLoading : false, subscribed : json.is_subscribed})
+        } else {
+          this.setState({isLoading : false, subscribed : false})
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
   async validateUserSubscription(store) {
     // InApp.Init();
     SplashScreen.hide();
-    this.setState({isLoading: false});
+    this.setState({ isLoading: false });
     console.log('Calling inap from startup');
     // InApp.Init((status) => {
     //   console.log('status', status);
@@ -124,26 +144,32 @@ export default class App extends React.Component {
     user = JSON.parse(user);
     SplashScreen.hide();
     let isUserLogin;
-    try{
+    let userID
+    try {
       isUserLogin = user.access_token != null;
-    }catch(errror){
+      userID = user.user.pk
+    } catch (errror) {
+      userID = null
       isUserLogin = false
     }
-    
-    this.setState({isUserLoggedIn: isUserLogin, isLoading : false});
+
+    console.log("LOGGEDIN",userID)
+    this.setState({ isUserLoggedIn: isUserLogin, userId: userID });
+    this.checkSubscription(userID)
   };
 
   render() {
     if (this.state.isLoading) {
       return (
         <View style={styles.lodaingContainer}>
+          {this.checkUserLogin}
           <Text style={styles.text}>Fetching details please wait...</Text>
           <ActivityIndicator size="large" color="#fff" />
         </View>
       );
       // return null;
     } else {
-      const {isActiveSubscription} = this.state;
+      const { isActiveSubscription } = this.state;
       // const isUserLogin = DataHandler.getUserLogin();
       // const isUserLogin = auth().currentUser;
 
@@ -151,15 +177,15 @@ export default class App extends React.Component {
       // console.log('===== isActiveSubscription =====', isActiveSubscription);
 
       // let initialRouteName = 'Login';
-      // if (isUserLogin && this.state.isActiveSubscription) {
-      //   subscribeToTopic();
-      //   initialRouteName = 'DrawerScreen';
-      // } else if (isUserLogin && !this.state.isActiveSubscription) {
-      //   unubscribeToTopic();
-      //   initialRouteName = 'Subscription';
-      // } else {
-      //   initialRouteName = 'Login';
-      // }
+      if (this.state.isUserLoggedIn && this.state.subscribed) {
+        subscribeToTopic();
+        initialRouteName = 'DrawerScreen';
+      } else if (this.state.isUserLoggedIn && !this.state.subscribed) {
+        unubscribeToTopic();
+        initialRouteName = 'Subscription';
+      } else {
+        initialRouteName = 'Login';
+      }
       // let initialRouteName = 'Login'
       const ios_id = '759533837975395_759535874641858';
       const android_id = '759533837975395_759534394642006';
@@ -170,16 +196,12 @@ export default class App extends React.Component {
 
       return (
         // eslint-disable-next-line react-native/no-inline-styles
-        <View style={{flex: 1, backgroundColor: '#000'}}>
+        <View style={{ flex: 1, backgroundColor: '#000' }}>
           <StatusBar barStyle="dark-content" />
           {/* {this.checkUserLogin()} */}
+          {console.log("subscribed",this.state.subscribed)}
           <Provider store={this.state.store}>
-            {console.log('Status', this.state.isUserLoggedIn)}
-            {this.state.isUserLoggedIn ? (
-              <AppNavigator initialRouteName={'DrawerScreen'} />
-            ) : (
-              <AppNavigator initialRouteName={'Login'} />
-            )}
+            <AppNavigator initialRouteName = {initialRouteName}/>
           </Provider>
           {/* <View style={{backgroundColor: '#fff'}}>
           <BannerView
@@ -204,8 +226,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  text: {color: '#fff', fontSize: 20, marginBottom: 20},
+  text: { color: '#fff', fontSize: 20, marginBottom: 20 },
 });
+
 
 // react-native-keyboard-manager
 // react-native-fbsdk
